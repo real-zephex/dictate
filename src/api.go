@@ -89,7 +89,7 @@ func Transcribe(audioPath string) (string, error) {
 
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
-		fmtError := fmt.Errorf("[ERROR] An error occured while making request to the GROQ API")
+		fmtError := fmt.Errorf("[ERROR] An error occured while making request to the GROQ API\nError: %v", err)
 		return "", fmtError
 	}
 	defer response.Body.Close()

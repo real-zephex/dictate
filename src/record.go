@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
-	"time"
+	"sync"
 
 	"github.com/gordonklaus/portaudio"
 	pa "github.com/gordonklaus/portaudio"
@@ -18,6 +18,7 @@ const (
 )
 
 type Recorder struct {
+	mu        sync.Mutex
 	stream    *pa.Stream
 	buffer    []int16
 	recording bool
@@ -32,56 +33,86 @@ func NewRecorder() (*Recorder, error) {
 }
 
 func (r *Recorder) Start() error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if r.recording {
+		return fmt.Errorf("[ERROR] Recorder is already running")
+	}
+
 	r.buffer = []int16{}
 	r.recording = true
-
-	chunk := make([]int16, framesPerBuffer)
 
 	stream, err := pa.OpenDefaultStream(
 		channels, // input channels
 		0,        // output channels
 		float64(sampleRate),
 		framesPerBuffer,
-		chunk,
+		r.processAudio,
 	)
 	if err != nil {
+		r.recording = false
 		return fmt.Errorf("[ERROR] Failed to open audio stream: %v", err)
 	}
 	r.stream = stream
 
 	if err := stream.Start(); err != nil {
+		stream.Close()
+		r.stream = nil
+		r.recording = false
 		return fmt.Errorf("[ERROR] Failed to start audio stream: %v", err)
 	}
-
-	go func() {
-		for r.recording {
-			if err := r.stream.Read(); err != nil {
-				break
-			}
-			// append chunk to buffer
-			tmp := make([]int16, len(chunk))
-			copy(tmp, chunk)
-			r.buffer = append(r.buffer, tmp...)
-		}
-	}()
 
 	return nil
 }
 
-func (r *Recorder) Stop() (string, error) {
-	r.recording = false
-	time.Sleep(50 * time.Millisecond) // let the read goroutine exit
+func (r *Recorder) processAudio(in []int16) {
+	tmp := make([]int16, len(in))
+	copy(tmp, in)
 
-	if r.stream != nil {
-		r.stream.Stop()
-		r.stream.Close()
-		r.stream = nil // nil it out so Terminate doesn't double-free
+	r.mu.Lock()
+	if r.recording {
+		r.buffer = append(r.buffer, tmp...)
+	}
+	r.mu.Unlock()
+}
+
+func (r *Recorder) Stop() (string, error) {
+	r.mu.Lock()
+	if !r.recording {
+		r.mu.Unlock()
+		return "", fmt.Errorf("[ERROR] Recorder is not running")
 	}
 
-	return saveWAV(r.buffer)
+	r.recording = false
+	stream := r.stream
+	r.mu.Unlock()
+
+	if stream != nil {
+		if err := stream.Stop(); err != nil {
+			_ = stream.Abort()
+		}
+		if err := stream.Close(); err != nil {
+			return "", fmt.Errorf("[ERROR] Failed to close audio stream: %v", err)
+		}
+	}
+
+	r.mu.Lock()
+	r.stream = nil
+	samples := append([]int16(nil), r.buffer...)
+	r.mu.Unlock()
+
+	return saveWAV(samples)
 }
 
 func (r *Recorder) Terminate() {
+	r.mu.Lock()
+	recording := r.recording
+	r.mu.Unlock()
+	if recording {
+		_, _ = r.Stop()
+	}
+
 	// guard against the known Pa_Terminate segfault
 	defer func() { recover() }()
 	portaudio.Terminate()
