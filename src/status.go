@@ -24,6 +24,20 @@ func ShowStatus(status Status, detail string) {
 
 	fmt.Printf("%s: %s\n", status, detail)
 
+	// Update the floating GUI state
+	switch status {
+	case StatusRecording:
+		SetGUIState("recording", "")
+	case StatusTranscribing:
+		SetGUIState("transcribing", "")
+	case StatusReady:
+		SetGUIState("ready", detail)
+	case StatusClipboard:
+		SetGUIState("clipboard", detail)
+	case StatusError:
+		SetGUIState("error", detail)
+	}
+
 	if _, err := exec.LookPath("notify-send"); err == nil {
 		args := []string{"--app-name", appName}
 		switch status {

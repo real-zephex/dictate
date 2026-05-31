@@ -50,7 +50,7 @@ func Transcribe(audioPath string) (string, error) {
 	writer := multipart.NewWriter(body)
 
 	// setting up the model
-	modelError := writer.WriteField("model", "whisper-large-v3")
+	modelError := writer.WriteField("model", "whisper-large-v3-turbo")
 	if modelError != nil {
 		fError := fmt.Errorf("Error while setting the model for audio transcription. Error: %v", modelError)
 		return "", fError

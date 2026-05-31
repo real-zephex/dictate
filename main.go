@@ -16,6 +16,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	_ = src.StartGUI()
+	defer src.CloseGUI()
+
 	var mu sync.Mutex
 	isRecording := false
 	isTranscribing := false

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"math"
 	"os"
 	"sync"
 
@@ -75,6 +76,22 @@ func (r *Recorder) processAudio(in []int16) {
 		r.buffer = append(r.buffer, tmp...)
 	}
 	r.mu.Unlock()
+
+	// Compute RMS volume to animate floating waveform in GUI
+	if len(in) > 0 {
+		var sum float64
+		for _, v := range in {
+			val := float64(v) / 32768.0
+			sum += val * val
+		}
+		rms := math.Sqrt(sum / float64(len(in)))
+		// Scale and boost to a dynamic range suitable for visual display
+		scaledVol := rms * 6.0
+		if scaledVol > 1.0 {
+			scaledVol = 1.0
+		}
+		SendGUIVolume(scaledVol)
+	}
 }
 
 func (r *Recorder) Stop() (string, error) {
