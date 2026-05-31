@@ -16,6 +16,7 @@ const (
 	DeliveryClipboard DeliveryResult = "clipboard"
 )
 
+// function to deliver text to the clipboard or paste it
 func DeliverText(text string) (DeliveryResult, error) {
 	text = strings.TrimSpace(text)
 	if text == "" {
@@ -34,6 +35,7 @@ func DeliverText(text string) (DeliveryResult, error) {
 	return DeliveryClipboard, nil
 }
 
+// function to copy text to the clipboard
 func copyToClipboard(text string) error {
 	switch runtime.GOOS {
 	case "linux":
@@ -62,6 +64,7 @@ func copyToClipboard(text string) error {
 	return fmt.Errorf("no supported clipboard command found")
 }
 
+// function to paste text from the clipboard
 func pasteFromClipboard() error {
 	switch runtime.GOOS {
 	case "linux":
@@ -88,12 +91,14 @@ func pasteFromClipboard() error {
 	return fmt.Errorf("no supported paste command found")
 }
 
+// function to write input to a command's stdin
 func writeToCommand(input string, name string, args ...string) error {
 	cmd := exec.Command(name, args...)
 	cmd.Stdin = bytes.NewBufferString(input)
 	return cmd.Run()
 }
 
+// function to check whether a particular command exists on the system
 func commandExists(name string) bool {
 	_, err := exec.LookPath(name)
 	return err == nil

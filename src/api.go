@@ -10,15 +10,6 @@ import (
 	"os"
 )
 
-/*
-
-curl https://api.groq.com/openai/v1/audio/transcriptions \
-  -H "Authorization: Bearer $GROQ_API_KEY" \
-  -H "Content-Type: multipart/form-data" \
-  -F file="@./sample_audio.m4a" \
-  -F model="whisper-large-v3"
-*/
-
 const BASE_URL string = "https://api.groq.com/openai/v1"
 
 func GetGroqKey() (string, error) {
