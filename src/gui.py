@@ -9,10 +9,17 @@ import warnings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+has_layer_shell = False
 try:
     gi.require_version('Gtk', '3.0')
     gi.require_version('Gdk', '3.0')
     from gi.repository import Gtk, Gdk, GLib, Pango
+    try:
+        gi.require_version('GtkLayerShell', '0.1')
+        from gi.repository import GtkLayerShell
+        has_layer_shell = True
+    except Exception:
+        pass
 except Exception as e:
     sys.stderr.write(f"GTK3 Import Error: {e}\n")
     sys.exit(1)
@@ -20,7 +27,18 @@ except Exception as e:
 class StatusWindow:
     def __init__(self):
         self.window = Gtk.Window()
-        self.window.set_type_hint(Gdk.WindowTypeHint.UTILITY)
+        
+        if has_layer_shell:
+            GtkLayerShell.init_for_window(self.window)
+            GtkLayerShell.set_layer(self.window, GtkLayerShell.Layer.OVERLAY)
+            GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.BOTTOM, True)
+            GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.LEFT, False)
+            GtkLayerShell.set_anchor(self.window, GtkLayerShell.Edge.RIGHT, False)
+            GtkLayerShell.set_margin(self.window, GtkLayerShell.Edge.BOTTOM, 60)
+            GtkLayerShell.set_keyboard_interactivity(self.window, False)
+        else:
+            self.window.set_type_hint(Gdk.WindowTypeHint.UTILITY)
+            
         self.window.set_decorated(False)
         self.window.set_keep_above(True)
         self.window.set_accept_focus(False)
@@ -124,6 +142,10 @@ class StatusWindow:
         )
 
     def position_window(self):
+        if has_layer_shell:
+            self.window.set_size_request(380, 68)
+            return
+
         screen = self.window.get_screen()
         display = Gdk.Display.get_default()
         monitor = display.get_primary_monitor()
