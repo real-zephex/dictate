@@ -78,7 +78,14 @@ Based on your desktop environment:
    export GROQ_API_KEY="your_actual_api_key_here"
    ```
 
-3. **Build the binary:**
+3. **Build and Install with Systemd (Linux Auto-Startup):**
+   To automatically build the binary, install it to your user local bin folder, and register it as an auto-starting systemd user service:
+   ```bash
+   ./install.sh
+   ```
+   *Note: This script will preserve your current `GROQ_API_KEY` by saving it to `~/.config/dictate/env` so systemd can access it.*
+
+   **Alternative Manual Build:**
    ```bash
    go build -o dictate
    ```
