@@ -4,6 +4,8 @@ An AI-powered voice dictation application written in Go. It enables system-wide 
 
 The interface includes a beautiful **Wispr Flow-inspired floating HUD overlay** at the bottom-center of the screen, complete with real-time waveform visualizers and status transition animations.
 
+![Dictate Demo](assets/demo.gif)
+
 ---
 
 ## Features
