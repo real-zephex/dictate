@@ -67,6 +67,8 @@ func main() {
 					return
 				}
 
+				fmt.Println("Transcribed:", text)
+
 				result, err := src.DeliverText(text)
 				if err != nil {
 					src.ShowStatus(src.StatusError, err.Error())

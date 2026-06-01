@@ -92,6 +92,26 @@ Based on your desktop environment:
    go build -o dictate
    ```
 
+### Windows Build
+
+1. **Install MSYS2** (if not already installed):
+   ```powershell
+   winget install --id MSYS2.MSYS2
+   ```
+
+2. **Install GCC, PortAudio, and pkg-config** via MSYS2's pacman:
+   ```powershell
+   C:\msys64\usr\bin\pacman.exe -S --noconfirm mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-portaudio mingw-w64-ucrt-x86_64-pkg-config
+   ```
+
+3. **Build** with the MSYS2 binaries in your PATH:
+   ```powershell
+   $env:PATH = "C:\msys64\ucrt64\bin;$env:PATH"
+   go build -o dictate.exe
+   ```
+
+   For convenience, add `C:\msys64\ucrt64\bin` to your user or system `PATH` environment variable so you can build without setting it each time.
+
 ---
 
 ## Usage & Hotkey Configuration

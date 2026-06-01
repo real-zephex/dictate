@@ -53,11 +53,14 @@ func copyToClipboard(text string) error {
 			return writeToCommand(text, "pbcopy")
 		}
 	case "windows":
+		if commandExists("clip.exe") {
+			return writeToCommand(text, "clip.exe")
+		}
 		if commandExists("powershell.exe") {
-			return writeToCommand(text, "powershell.exe", "-NoProfile", "-Command", "Set-Clipboard")
+			return writeToCommand(text, "powershell.exe", "-NoProfile", "-Command", "$input | Set-Clipboard")
 		}
 		if commandExists("powershell") {
-			return writeToCommand(text, "powershell", "-NoProfile", "-Command", "Set-Clipboard")
+			return writeToCommand(text, "powershell", "-NoProfile", "-Command", "$input | Set-Clipboard")
 		}
 	}
 
@@ -79,7 +82,7 @@ func pasteFromClipboard() error {
 			return exec.Command("osascript", "-e", `tell application "System Events" to keystroke "v" using command down`).Run()
 		}
 	case "windows":
-		script := `Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait("^v")`
+		script := `(New-Object -ComObject WScript.Shell).SendKeys("^v")`
 		if commandExists("powershell.exe") {
 			return exec.Command("powershell.exe", "-NoProfile", "-Command", script).Run()
 		}
