@@ -51,6 +51,9 @@ func ShowStatus(status Status, detail string) {
 			args = append(args, "--urgency", "low", "--expire-time", "2500", string(status), detail)
 		}
 
-		_ = exec.Command("notify-send", args...).Start()
+		cmd := exec.Command("notify-send", args...)
+		if err := cmd.Start(); err == nil {
+			go cmd.Wait() // Reap child process to prevent zombies
+		}
 	}
 }
