@@ -42,9 +42,9 @@ func ShowStatus(status Status, detail string) {
 		args := []string{"--app-name", appName}
 		switch status {
 		case StatusRecording:
-			args = append(args, "--urgency", "normal", "--expire-time", "0", string(status), detail)
+			args = append(args, "--urgency", "normal", "--expire-time", "2500", string(status), detail)
 		case StatusTranscribing:
-			args = append(args, "--urgency", "normal", "--expire-time", "0", string(status), detail)
+			args = append(args, "--urgency", "normal", "--expire-time", "2500", string(status), detail)
 		case StatusError:
 			args = append(args, "--urgency", "critical", string(status), detail)
 		default:
